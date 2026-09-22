@@ -53,4 +53,28 @@ Each of these gets a test when the code that replaces it is written.
 
 No per-class cap. The smallest class still has 4,223 posts, and a cap at 1,500 would throw away the class prior `MultinomialNB` is supposed to learn.
 
+## Token oracle, NLTK 3.10.3
+
+The notebook prints this token list for the first sentence of the CPL § 450.30 example:
+
+`appeal defend sentenc author subdivis two section may base upon ground sentenc either invalid matter law harsh excess`
+
+`get_tokens` on that sentence, with NLTK 3.10.3 Porter and the current English stopword list, matches that list except it also emits `b`. Punctuation stripping turns `(b)` into `b`, and `b` is not a stopword. `(a)` disappears because `a` is a stopword. `upon` is still kept, so this is not a stopword-list change. The printed list is the oracle. The extra `b` is the recorded diff. Single letters are not dropped to make the lists match.
+
+## Post classifier, 2026-09-22
+
+Held-out 20% stratified split, `random_state=2016`, vectorizer fit on the train split only. Accuracy 0.7973, macro-F1 0.7125, 19,782 test posts. The serving model is a refit on all 98,910 posts. Vectorizer is `max_features=10000`, `lowercase=False`, `norm=l2`, token pattern `(?u)\b\w\w+\b`. `MultinomialNB` defaults. scikit-learn 1.9.1, NLTK 3.10.3. Artifact: `2016/artifacts/posts_classifier.joblib`. Metrics: `2016/artifacts/posts_metrics.json`.
+
+Recall is high on the large flairs (housing 0.973, family 0.949, employment 0.948, driving 0.921) and low where the class is small and the language overlaps (contract 0.290, insurance 0.366, business 0.406). That is the class prior doing what it was left in place to do.
+
+Token fields were written on `POSTS.posts` (98,910), `ARTICLES.articles` (6,172, mid-crawl, so the next train rewrites them), and `LAWS.CA` (161,426). `LAWS.NY` was tokenized later, after the Senate load, 10,816 sections.
+
+## Law rankers, 2026-09-22
+
+One TF-IDF matrix per flair per state, fit only on sections whose path starts with a mapped prefix. No route was empty. The notebook law vectorizer is `lowercase=False` with no `max_features` cap; the token pattern is pinned to `(?u)\b\w\w+\b`. Each artifact holds the vectorizer, the sparse matrix, and the display rows in that same order: `2016/artifacts/laws/{NY,CA}/{flair}.joblib`. Counts are in `2016/artifacts/laws_report.json`. New York employment is 41 sections (Articles 6 and 19). California employment is 954 (Labor Code division 2). California school is the largest, 11,520, because the route is the whole Education Code.
+
+## Article rankers, 2026-09-22
+
+994 articles were missing tokens after the crawl finished. Those were tokenized, then one matrix was fit per flair on the mapped Nolo areas only. Digital and school were skipped because their article lists are empty. Contract is 744 articles in Business Formation and Small Claims, and the rows include "Contracts 101: Make a Legally Valid Contract". Display rows are title, url, and area. No article body is stored in the artifact. Files are `2016/artifacts/articles/{flair}.joblib`. Counts are in `2016/artifacts/articles_report.json`.
+
 1,206 posts mention the word "flair." In a sample of 20, the asker is choosing a flair and often says they may have it wrong ("hopefully this is the correct flair," "please fix my flair"). That is the asker's own label, with ordinary self-doubt. It is not evidence that moderators replaced the label. The label stays the training target.

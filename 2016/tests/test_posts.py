@@ -37,7 +37,7 @@ def test_routes_cover_every_dataset_label():
     assert routes["provenance"]["source"] == "hand-mapped"
     assert set(routes["mappings"]) == set(LABELS)
     for label, mapping in routes["mappings"].items():
-        assert mapping["articles"], label
+        assert isinstance(mapping["articles"], list), label
         for state in ("NY", "CA"):
             prefixes = mapping["laws"][state]
             assert prefixes, label

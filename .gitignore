@@ -6,6 +6,9 @@
 **/.env
 **/.ruff_cache/
 
+# California legislature bulk download. About 1.2 GB.
+/pubinfo_2025.zip
+
 # Scraped pages, Mongo dumps, and trained models stay local.
 2016/data/
 2016/artifacts/
