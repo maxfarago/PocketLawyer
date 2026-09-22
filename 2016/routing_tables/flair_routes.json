@@ -1,0 +1,297 @@
+{
+  "provenance": {
+    "source": "hand-mapped",
+    "author": "Max Farago",
+    "mapped_at": "2026-09-22",
+    "note": "employment is Max's worked example. Other flairs drafted 2026-09-22. Prefixes omit the year root (for example '2025 New York Laws'). Paths are prefixes: a one-element path maps a whole code. Strings must match the scraper inventory once it exists; see review list for strings not yet checked against Justia."
+  },
+  "mappings": {
+    "employment": {
+      "articles": ["Employment Law"],
+      "laws": {
+        "NY": [
+          ["LAB - Labor", "Article 6 - Payment of Wages"],
+          ["LAB - Labor", "Article 19 - Minimum Wage Act"]
+        ],
+        "CA": [
+          [
+            "Labor Code - LAB",
+            "DIVISION 2 - EMPLOYMENT REGULATION AND SUPERVISION"
+          ]
+        ]
+      }
+    },
+    "business": {
+      "articles": ["Small Business Law"],
+      "laws": {
+        "NY": [
+          ["BSC - Business Corporation"],
+          ["LLC - Limited Liability Company Law"],
+          ["PTR - Partnership"]
+        ],
+        "CA": [["Corporations Code - CORP"]]
+      }
+    },
+    "contract": {
+      "articles": [
+        "Consumer Protection Law",
+        "Arbitration & Mediation Law",
+        "Litigation & Appeals"
+      ],
+      "laws": {
+        "NY": [
+          [
+            "GOB - General Obligations",
+            "Article 5 - Creation, Definition and Enforcement of Contractual Obligations"
+          ],
+          [
+            "GOB - General Obligations",
+            "Article 15 - Modification and Discharge of Obligations"
+          ],
+          [
+            "GBS - General Business",
+            "Article 22-A - Consumer Protection From Deceptive Acts and Practices"
+          ],
+          [
+            "GBS - General Business",
+            "Article 29-H - Debt Collection Procedures"
+          ],
+          [
+            "GBS - General Business",
+            "Article 36-A - Home Improvement Contracts"
+          ],
+          ["UCC - Uniform Commercial Code", "Article 2 - Sales"]
+        ],
+        "CA": [
+          [
+            "Civil Code - CIV",
+            "DIVISION 3 - OBLIGATIONS",
+            "PART 1 - OBLIGATIONS IN GENERAL"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3 - OBLIGATIONS",
+            "PART 2 - CONTRACTS"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3 - OBLIGATIONS",
+            "PART 4 - OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS",
+            "TITLE 1.5 - CONSUMERS LEGAL REMEDIES ACT"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3 - OBLIGATIONS",
+            "PART 4 - OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS",
+            "TITLE 1.6C - FAIR DEBT COLLECTION PRACTICES"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3 - OBLIGATIONS",
+            "PART 4 - OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS",
+            "TITLE 1.7 - CONSUMER WARRANTIES"
+          ],
+          ["Commercial Code - COM", "DIVISION 2 - SALES"]
+        ]
+      }
+    },
+    "criminal": {
+      "articles": ["Criminal Law", "DUI Law: History and Overview"],
+      "laws": {
+        "NY": [["PEN - Penal"], ["CPL - Criminal Procedure"]],
+        "CA": [["Penal Code - PEN"]]
+      }
+    },
+    "digital": {
+      "articles": ["Consumer Protection Law"],
+      "laws": {
+        "NY": [
+          [
+            "GBS - General Business",
+            "Article 9-C - Cyber Piracy Protections; Domain Names"
+          ],
+          [
+            "GBS - General Business",
+            "Article 39-F - Notification of Unauthorized Acquisition of Private Information; Data Security Protections"
+          ],
+          [
+            "GBS - General Business",
+            "Article 39-FF - New York Child Data Protection Act"
+          ],
+          [
+            "GBS - General Business",
+            "Article 42 - Social Media Terms of Service"
+          ],
+          ["CVR - Civil Rights", "Article 5 - Right of Privacy"],
+          [
+            "PEN - Penal",
+            "Article 156 - Offenses Involving Computers; Definition of Terms"
+          ]
+        ],
+        "CA": [
+          [
+            "Civil Code - CIV",
+            "DIVISION 3 - OBLIGATIONS",
+            "PART 4 - OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS",
+            "TITLE 1.6D - ELECTRONIC COMMERCE"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3 - OBLIGATIONS",
+            "PART 4 - OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS",
+            "TITLE 1.81 - CUSTOMER RECORDS"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3 - OBLIGATIONS",
+            "PART 4 - OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS",
+            "TITLE 1.81.3 - IDENTITY THEFT"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3 - OBLIGATIONS",
+            "PART 4 - OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS",
+            "TITLE 1.81.46 - Online Violence Prevention Act"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3 - OBLIGATIONS",
+            "PART 4 - OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS",
+            "TITLE 1.81.5 - California Consumer Privacy Act of 2018"
+          ]
+        ]
+      }
+    },
+    "driving": {
+      "articles": [
+        "Traffic Laws",
+        "Car Accident Law",
+        "DUI Law: History and Overview"
+      ],
+      "laws": {
+        "NY": [
+          ["VAT - Vehicle and Traffic"],
+          [
+            "ISC - Insurance",
+            "Article 51 - Comprehensive Motor Vehicle Insurance Reparations"
+          ]
+        ],
+        "CA": [["Vehicle Code - VEH"]]
+      }
+    },
+    "family": {
+      "articles": ["Family Law"],
+      "laws": {
+        "NY": [["DOM - Domestic Relations"]],
+        "CA": [["Family Code - FAM"]]
+      }
+    },
+    "housing": {
+      "articles": ["Real Estate Law"],
+      "laws": {
+        "NY": [
+          ["RPP - Real Property", "Article 6-A - Good Cause Eviction Law"],
+          ["RPP - Real Property", "Article 7 - Landlord and Tenant"],
+          [
+            "RPA - Real Property Actions and Proceedings",
+            "Article 7 - Summary Proceeding to Recover Possession of Real Property"
+          ],
+          [
+            "RPA - Real Property Actions and Proceedings",
+            "Article 7-C - Special Proceedings by Tenants of Dwellings for Judgment Directing Deposit of Rents and the Use Thereof for the Purpose of Remedying Conditions Dangerous to Life, Health or Safety"
+          ],
+          [
+            "GOB - General Obligations",
+            "Article 7 - Obligations Relating to Property Received as Security"
+          ],
+          ["MDW - Multiple Dwelling"],
+          ["ETP - Emergency Tenant Protection Act 576/74"]
+        ],
+        "CA": [
+          [
+            "Civil Code - CIV",
+            "DIVISION 3 - OBLIGATIONS",
+            "PART 4 - OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS",
+            "TITLE 5 - HIRING"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 4 - GENERAL PROVISIONS",
+            "PART 5 - Common Interest Developments"
+          ],
+          [
+            "Code of Civil Procedure - CCP",
+            "PART 3 - OF SPECIAL PROCEEDINGS OF A CIVIL NATURE",
+            "TITLE 3 - SUMMARY PROCEEDINGS",
+            "CHAPTER 4 - Summary Proceedings for Obtaining Possession of Real Property in Certain Cases"
+          ]
+        ]
+      }
+    },
+    "insurance": {
+      "articles": [
+        "Accidents & Injuries",
+        "Car Accident Law",
+        "Health Care Law"
+      ],
+      "laws": {
+        "NY": [
+          [
+            "ISC - Insurance",
+            "Article 24 - Unfair Methods of Competition and Unfair and Deceptive Acts and Practices"
+          ],
+          [
+            "ISC - Insurance",
+            "Article 26 - Unfair Claim Settlement Practices; Other Misconduct; Discrimination"
+          ],
+          ["ISC - Insurance", "Article 31 - Insurance Contracts - General"],
+          [
+            "ISC - Insurance",
+            "Article 32 - Insurance Contracts - Life, Accident and Health, Annuities"
+          ],
+          [
+            "ISC - Insurance",
+            "Article 34 - Insurance Contracts-Property/casualty"
+          ],
+          [
+            "ISC - Insurance",
+            "Article 49 - Utilization Review and External Appeal"
+          ],
+          [
+            "ISC - Insurance",
+            "Article 51 - Comprehensive Motor Vehicle Insurance Reparations"
+          ]
+        ],
+        "CA": [["Insurance Code - INS"]]
+      }
+    },
+    "school": {
+      "articles": ["Education Law"],
+      "laws": {
+        "NY": [["EDN - Education", "Title 4 - Teachers and Pupils"]],
+        "CA": [
+          ["Education Code - EDC"],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3 - OBLIGATIONS",
+            "PART 4 - OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS",
+            "TITLE 1.6C.7 - Educational Debt Collection Practices"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3 - OBLIGATIONS",
+            "PART 4 - OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS",
+            "TITLE 1.6C.10 - Student Loans: Borrower Rights"
+          ]
+        ]
+      }
+    },
+    "wills": {
+      "articles": ["Estate Planning", "Elder Law"],
+      "laws": {
+        "NY": [["EPT - Estates, Powers and Trusts"]],
+        "CA": [["Probate Code - PROB"]]
+      }
+    }
+  }
+}

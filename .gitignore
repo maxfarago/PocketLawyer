@@ -1,0 +1,13 @@
+.DS_Store
+**/.venv/
+**/__pycache__/
+**/.pytest_cache__/
+**/*.pyc
+**/.env
+**/.ruff_cache/
+
+# Scraped pages, Mongo dumps, and trained models stay local.
+2016/data/
+2016/artifacts/
+2026/data/
+2026/artifacts/
