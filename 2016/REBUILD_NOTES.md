@@ -34,6 +34,8 @@ Each of these gets a test when the code that replaces it is written.
 - Tokenization walks every database on the Mongo server.
 - A new `PorterStemmer` and stopword list are built per word and per document.
 
+Tests cover all eight: `test_train.py`, `test_validate.py`, `test_text.py`. An empty law route returns None instead of raising `empty vocabulary`. Routing files are read with `json.loads`.
+
 ## Design decisions kept
 
 - Strip all digits.
@@ -76,5 +78,15 @@ One TF-IDF matrix per flair per state, fit only on sections whose path starts wi
 ## Article rankers, 2026-09-22
 
 994 articles were missing tokens after the crawl finished. Those were tokenized, then one matrix was fit per flair on the mapped Nolo areas only. Digital and school were skipped because their article lists are empty. Contract is 744 articles in Business Formation and Small Claims, and the rows include "Contracts 101: Make a Legally Valid Contract". Display rows are title, url, and area. No article body is stored in the artifact. Files are `2016/artifacts/articles/{flair}.joblib`. Counts are in `2016/artifacts/articles_report.json`.
+
+## Overtime question, 2026-09-22
+
+Question: "i work more than 40 hours a week but my boss wont pay me for overtime". `get_tokens` yields `work hour week boss wont pay overtim`. The digits in 40 are gone.
+
+Both states classify as `employment` with classifier score 0.945. That score is not a calibrated probability.
+
+New York laws, cosine: LAB § 661 records of employers (0.317), § 195 notice and record-keeping (0.204), § 196-E construction reporting pay (0.146), § 652 minimum wage (0.122), § 190 definitions (0.097). The route is only Articles 6 and 19, payment of wages and minimum wage, so the hours statutes are not in the matrix. Top article: "What's Your Unpaid Wage Claim Worth in New York?"
+
+California laws: LAB § 556 (0.415), § 1815 (0.376), § 751.8 (0.362), § 513 (0.361), § 1454 (0.340). Top article: "California Wage and Hour Laws". The state filter kept California titles and dropped other states.
 
 1,206 posts mention the word "flair." In a sample of 20, the asker is choosing a flair and often says they may have it wrong ("hopefully this is the correct flair," "please fix my flair"). That is the asker's own label, with ordinary self-doubt. It is not evidence that moderators replaced the label. The label stays the training target.

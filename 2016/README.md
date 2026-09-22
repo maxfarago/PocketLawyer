@@ -16,3 +16,11 @@ pytest
 ```
 
 MongoDB listens on `127.0.0.1:27017` only. Scraped pages and trained models go to `data/` and `artifacts/`, which are gitignored.
+
+Serving does not use Mongo. After the artifacts exist:
+
+```bash
+python -m pl2016.app
+```
+
+`POST /ask` takes `{"question": "...", "state": "NY"}`. `GET /health` and `GET /manifest` are open. The image is `docker build -t pl2016 .` from this directory, which copies `artifacts/`.

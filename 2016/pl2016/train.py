@@ -256,7 +256,21 @@ def train(uri: str = MONGO_URI) -> dict:
         CLASSIFIER_PATH,
     )
     METRICS_PATH.write_text(json.dumps(report, indent=2) + "\n")
+    write_manifest()
     return report
+
+
+def fit_law_route_or_skip(rows: list[dict]):
+    """None when the route has no sections or the vocabulary is empty.
+
+    The notebook fitted every section and crashed on an empty vocabulary.
+    """
+    if not rows:
+        return None
+    try:
+        return fit_law_route(rows)
+    except ValueError:
+        return None
 
 
 def fit_law_route(rows: list[dict]):
@@ -311,16 +325,12 @@ def train_laws(uri: str = MONGO_URI) -> dict:
         for state in STATES:
             prefixes = mapping["laws"][state]
             rows = _load_routed_laws(client[LAWS_DB][state], prefixes)
-            if not rows:
+            fitted = fit_law_route_or_skip(rows)
+            if fitted is None:
                 print(f"laws skip {state} {label}", flush=True)
                 report["skipped"].append({"state": state, "flair": label, "reason": "no sections"})
                 continue
-            try:
-                vectorizer, matrix, display = fit_law_route(rows)
-            except ValueError as exc:
-                print(f"laws skip {state} {label}: {exc}", flush=True)
-                report["skipped"].append({"state": state, "flair": label, "reason": str(exc)})
-                continue
+            vectorizer, matrix, display = fitted
             path = ARTIFACTS / "laws" / state / f"{slug(label)}.joblib"
             path.parent.mkdir(parents=True, exist_ok=True)
             joblib.dump(
@@ -335,6 +345,7 @@ def train_laws(uri: str = MONGO_URI) -> dict:
             print(f"laws {state} {label} {len(display)}", flush=True)
     out = ARTIFACTS / "laws_report.json"
     out.write_text(json.dumps(report, indent=2) + "\n")
+    write_manifest()
     return report
 
 
@@ -421,7 +432,92 @@ def train_articles(uri: str = MONGO_URI) -> dict:
         print(f"articles {label} {len(display)}", flush=True)
     out = ARTIFACTS / "articles_report.json"
     out.write_text(json.dumps(report, indent=2) + "\n")
+    write_manifest()
     return report
+
+
+def build_manifest(directory: Path | None = None) -> dict:
+    """One record of counts, dates, routing provenance, metrics, and library versions."""
+    directory = directory or ARTIFACTS
+    routes = json.loads((ROOT / "routing_tables" / "flair_routes.json").read_text(encoding="utf-8"))
+    posts = _read_json(directory / "posts_metrics.json")
+    posts_loaded = _read_json(directory / "posts_report.json")
+    laws = _read_json(directory / "laws_report.json")
+    articles = _read_json(directory / "articles_report.json")
+    nolo = _read_json(directory / "nolo_audit.json")
+    law_counts = {}
+    for label, by_state in laws.get("routes", {}).items():
+        law_counts[label] = {}
+        for state in STATES:
+            law_counts[label][state] = (by_state.get(state) or {}).get("documents", 0)
+    article_counts = {
+        label: info.get("documents", 0) for label, info in articles.get("routes", {}).items()
+    }
+    return {
+        "version": _package_version(),
+        "written_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "states": list(STATES),
+        "versions": posts.get("versions", {}),
+        "routing": routes.get("provenance", {}),
+        "counts": {
+            "posts": posts_loaded.get("documents", posts.get("documents")),
+            "articles": nolo.get("documents"),
+            "articles_empty_text": nolo.get("empty_text"),
+            "articles_missing_area": nolo.get("missing_area"),
+            "laws": {
+                "NY": _corpus_count("LAWS.NY", laws, posts),
+                "CA": _corpus_count("LAWS.CA", laws, posts),
+            },
+        },
+        "dates": {
+            "routes_mapped_at": (routes.get("provenance") or {}).get("mapped_at"),
+            "posts_trained_at": posts.get("trained_at"),
+            "laws_trained_at": laws.get("trained_at"),
+            "articles_trained_at": articles.get("trained_at"),
+        },
+        "metrics": {
+            "accuracy": posts.get("accuracy"),
+            "macro_f1": posts.get("macro_f1"),
+            "held_out_documents": posts.get("held_out_documents"),
+            "per_flair": posts.get("per_flair", {}),
+        },
+        "law_documents": law_counts,
+        "article_documents": article_counts,
+        "skipped": {
+            "laws": laws.get("skipped", []),
+            "articles": articles.get("skipped", []),
+        },
+    }
+
+
+def write_manifest(directory: Path | None = None) -> dict:
+    directory = directory or ARTIFACTS
+    manifest = build_manifest(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    return manifest
+
+
+def _package_version() -> str:
+    from pl2016 import __version__
+
+    return __version__
+
+
+def _corpus_count(key: str, *reports: dict) -> int | None:
+    """The loaded corpus size, not the last missing-only write (that one is often 0)."""
+    numbers = []
+    for report in reports:
+        value = (report.get("tokens_written") or {}).get(key)
+        if isinstance(value, int):
+            numbers.append(value)
+    return max(numbers) if numbers else None
+
+
+def _read_json(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def main() -> None:

@@ -1,12 +1,15 @@
+import json
 from pathlib import Path
 
 import pytest
 
 from pl2016.train import (
     TOKEN_COLLECTIONS,
+    build_manifest,
     evaluate_posts,
     fit_article_route,
     fit_law_route,
+    fit_law_route_or_skip,
     make_post_vectorizer,
     matching_articles,
     matching_laws,
@@ -71,6 +74,66 @@ def test_law_prefix_keeps_descendants_and_drops_a_bare_title():
     ]
     matched = matching_laws(docs, [["Labor Code - LAB", "DIVISION 2. EMPLOYMENT"]])
     assert [doc["url"] for doc in matched] == ["a"]
+
+
+def test_empty_law_route_is_skipped_instead_of_raising():
+    assert fit_law_route_or_skip([]) is None
+    empty_vocabulary = {
+        "tokens": "",
+        "citation": "X § 1",
+        "title": "Empty",
+        "url": "http://example.test/1",
+        "text": "",
+        "section": ["Labor Code - LAB"],
+    }
+    assert fit_law_route_or_skip([empty_vocabulary]) is None
+
+
+def test_manifest_records_counts_provenance_and_metrics(tmp_path):
+    (tmp_path / "posts_metrics.json").write_text(
+        json.dumps(
+            {
+                "trained_at": "2026-09-22T00:00:00+00:00",
+                "accuracy": 0.5,
+                "macro_f1": 0.4,
+                "versions": {"nltk": "3.10.3"},
+                "tokens_written": {"LAWS.CA": 10},
+                "per_flair": {},
+            }
+        )
+    )
+    (tmp_path / "posts_report.json").write_text(json.dumps({"documents": 3}))
+    (tmp_path / "laws_report.json").write_text(
+        json.dumps(
+            {
+                "trained_at": "2026-09-22T01:00:00+00:00",
+                "tokens_written": {"LAWS.NY": 2},
+                "routes": {"employment": {"NY": {"documents": 2}, "CA": {"documents": 4}}},
+                "skipped": [],
+            }
+        )
+    )
+    (tmp_path / "articles_report.json").write_text(
+        json.dumps(
+            {
+                "trained_at": "2026-09-22T02:00:00+00:00",
+                "routes": {"employment": {"documents": 5}},
+                "skipped": [{"flair": "school"}],
+            }
+        )
+    )
+    (tmp_path / "nolo_audit.json").write_text(
+        json.dumps({"documents": 7, "empty_text": 0, "missing_area": 1})
+    )
+    manifest = build_manifest(tmp_path)
+    assert manifest["routing"]["source"] == "hand-mapped"
+    assert manifest["counts"]["posts"] == 3
+    assert manifest["counts"]["articles"] == 7
+    assert manifest["counts"]["laws"] == {"NY": 2, "CA": 10}
+    assert manifest["law_documents"]["employment"]["CA"] == 4
+    assert manifest["article_documents"]["employment"] == 5
+    assert manifest["metrics"]["accuracy"] == 0.5
+    assert manifest["dates"]["routes_mapped_at"] == "2026-09-22"
 
 
 def test_empty_law_route_matches_nothing():

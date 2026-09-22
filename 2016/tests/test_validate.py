@@ -1,4 +1,14 @@
+from pathlib import Path
+
 from pl2016.routing.validate import article_areas, check_routes, prefix_problem
+
+
+def test_routing_files_are_json_not_eval():
+    root = Path(__file__).resolve().parents[1]
+    for relative in ("pl2016/routing/validate.py", "pl2016/train.py", "pl2016/ask.py"):
+        source = (root / relative).read_text()
+        assert "eval(" not in source
+    assert "json.loads" in (root / "pl2016/routing/validate.py").read_text()
 
 
 def test_areas_are_the_mapped_list_not_the_mapping_keys():
