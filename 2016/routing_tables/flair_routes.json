@@ -1,0 +1,291 @@
+{
+  "provenance": {
+    "source": "hand-mapped",
+    "author": "Max Farago",
+    "mapped_at": "2026-09-22",
+    "note": "employment is Max's worked example. Other flairs drafted 2026-09-22. Article names aligned to Nolo breadcrumb areas on 2026-09-22. Contract uses Business Formation and Small Claims, where the contract articles actually sit. Digital and school have no Nolo area and are statutes only. Health Care Law and Elder Law were dropped because those areas do not exist. Prefixes omit the year root (for example '2025 New York Laws'). Paths are prefixes: a one-element path maps a whole code. California prefixes use official pubinfo TOC headings, including bracketed section ranges. The CCP unlawful-detainer prefix includes the PRELIMINARY PROVISIONS node between Part 3 and Title 3. New York prefixes use the Senate Open Legislation headings. Penal Article 156 includes Part 3 and Title J, which sit between the code and the article."
+  },
+  "mappings": {
+    "employment": {
+      "articles": ["Employment Law"],
+      "laws": {
+        "NY": [
+          ["LAB - Labor", "Article 6 - Payment of Wages"],
+          ["LAB - Labor", "Article 19 - Minimum Wage Act"]
+        ],
+        "CA": [
+          [
+            "Labor Code - LAB",
+            "DIVISION 2. EMPLOYMENT REGULATION AND SUPERVISION [200. - 2699.8.]"
+          ]
+        ]
+      }
+    },
+    "business": {
+      "articles": ["Small Business"],
+      "laws": {
+        "NY": [
+          ["BSC - Business Corporation"],
+          ["LLC - Limited Liability Company Law"],
+          ["PTR - Partnership"]
+        ],
+        "CA": [["Corporations Code - CORP"]]
+      }
+    },
+    "contract": {
+      "articles": [
+        "Business Formation: LLCs & Corporations",
+        "Small Claims Court & Lawsuits"
+      ],
+      "laws": {
+        "NY": [
+          [
+            "GOB - General Obligations",
+            "Article 5 - Creation, Definition and Enforcement of Contractual Obligations"
+          ],
+          [
+            "GOB - General Obligations",
+            "Article 15 - Modification and Discharge of Obligations"
+          ],
+          [
+            "GBS - General Business",
+            "Article 22-A - Protection From Unfair, Deceptive, or Abusive Acts and Practices"
+          ],
+          [
+            "GBS - General Business",
+            "Article 29-H - Debt Collection Procedures"
+          ],
+          [
+            "GBS - General Business",
+            "Article 36-A - Home Improvement Contracts"
+          ],
+          ["UCC - Uniform Commercial Code", "Article 2 - Sales"]
+        ],
+        "CA": [
+          [
+            "Civil Code - CIV",
+            "DIVISION 3. OBLIGATIONS [1427. - 3273.91.]",
+            "PART 1. OBLIGATIONS IN GENERAL [1427. - 1543.]"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3. OBLIGATIONS [1427. - 3273.91.]",
+            "PART 2. CONTRACTS [1549. - 1701.]"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3. OBLIGATIONS [1427. - 3273.91.]",
+            "PART 4. OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS [1738. - 3273.91.]",
+            "TITLE 1.5. CONSUMERS LEGAL REMEDIES ACT [1750. - 1784.]"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3. OBLIGATIONS [1427. - 3273.91.]",
+            "PART 4. OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS [1738. - 3273.91.]",
+            "TITLE 1.6C. FAIR DEBT COLLECTION PRACTICES [1788. - 1788.33.]"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3. OBLIGATIONS [1427. - 3273.91.]",
+            "PART 4. OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS [1738. - 3273.91.]",
+            "TITLE 1.7. CONSUMER WARRANTIES [1790. - 1797.96.]"
+          ],
+          ["Commercial Code - COM", "DIVISION 2. SALES [2101. - 2801.]"]
+        ]
+      }
+    },
+    "criminal": {
+      "articles": ["Criminal Law", "DUI/DWI & Traffic Tickets"],
+      "laws": {
+        "NY": [["PEN - Penal"], ["CPL - Criminal Procedure"]],
+        "CA": [["Penal Code - PEN"]]
+      }
+    },
+    "digital": {
+      "articles": [],
+      "laws": {
+        "NY": [
+          [
+            "GBS - General Business",
+            "Article 9-C - Cyber Piracy Protections; Domain Names"
+          ],
+          [
+            "GBS - General Business",
+            "Article 39-F - Notification of Unauthorized Acquisition of Private Information; Data Security Protections"
+          ],
+          [
+            "GBS - General Business",
+            "Article 39-FF - New York Child Data Protection Act"
+          ],
+          [
+            "GBS - General Business",
+            "Article 42 - Social Media Terms of Service"
+          ],
+          ["CVR - Civil Rights", "Article 5 - Right of Privacy"],
+          [
+            "PEN - Penal",
+            "Part 3 - Specific Offenses",
+            "Title J - Offenses Involving Theft",
+            "Article 156 - Offenses Involving Computers; Definition of Terms"
+          ]
+        ],
+        "CA": [
+          [
+            "Civil Code - CIV",
+            "DIVISION 3. OBLIGATIONS [1427. - 3273.91.]",
+            "PART 4. OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS [1738. - 3273.91.]",
+            "TITLE 1.6D. ELECTRONIC COMMERCE [1789. - 1789.9.]"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3. OBLIGATIONS [1427. - 3273.91.]",
+            "PART 4. OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS [1738. - 3273.91.]",
+            "TITLE 1.81. CUSTOMER RECORDS [1798.80. - 1798.84.1.]"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3. OBLIGATIONS [1427. - 3273.91.]",
+            "PART 4. OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS [1738. - 3273.91.]",
+            "TITLE 1.81.3. IDENTITY THEFT [1798.92. - 1798.97.]"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3. OBLIGATIONS [1427. - 3273.91.]",
+            "PART 4. OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS [1738. - 3273.91.]",
+            "TITLE 1.81.46. Online Violence Prevention Act [1798.99.20. - 1798.99.23.]"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3. OBLIGATIONS [1427. - 3273.91.]",
+            "PART 4. OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS [1738. - 3273.91.]",
+            "TITLE 1.81.5. California Consumer Privacy Act of 2018 [1798.100. - 1798.199.100.]"
+          ]
+        ]
+      }
+    },
+    "driving": {
+      "articles": ["DUI/DWI & Traffic Tickets", "Car Accidents"],
+      "laws": {
+        "NY": [
+          ["VAT - Vehicle & Traffic"],
+          [
+            "ISC - Insurance",
+            "Article 51 - Comprehensive Motor Vehicle Insurance Reparations"
+          ]
+        ],
+        "CA": [["Vehicle Code - VEH"]]
+      }
+    },
+    "family": {
+      "articles": ["Divorce & Family Law"],
+      "laws": {
+        "NY": [["DOM - Domestic Relations"]],
+        "CA": [["Family Code - FAM"]]
+      }
+    },
+    "housing": {
+      "articles": ["Real Estate & Rental Property"],
+      "laws": {
+        "NY": [
+          ["RPP - Real Property", "Article 6-A - Good Cause Eviction Law"],
+          ["RPP - Real Property", "Article 7 - Landlord and Tenant"],
+          [
+            "RPA - Real Property Actions & Proceedings",
+            "Article 7 - Summary Proceeding to Recover Possession of Real Property"
+          ],
+          [
+            "RPA - Real Property Actions & Proceedings",
+            "Article 7-C - Special Proceedings By Tenants of Dwellings For Judgment Directing Deposit of Rents and the Use Thereof For the Purpose of Remedying Conditions Dangerous to Life, Health or Safety"
+          ],
+          [
+            "GOB - General Obligations",
+            "Article 7 - Obligations Relating to Property Received As Security"
+          ],
+          ["MDW - Multiple Dwelling"],
+          ["ETP - Emergency Tenant Protection Act 576/74"]
+        ],
+        "CA": [
+          [
+            "Civil Code - CIV",
+            "DIVISION 3. OBLIGATIONS [1427. - 3273.91.]",
+            "PART 4. OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS [1738. - 3273.91.]",
+            "TITLE 5. HIRING [1925. - 1997.270.]"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 4. GENERAL PROVISIONS [3274. - 9566.]",
+            "PART 5. Common Interest Developments [4000. - 6150.]"
+          ],
+          [
+            "Code of Civil Procedure - CCP",
+            "PART 3. OF SPECIAL PROCEEDINGS OF A CIVIL NATURE [1063. - 1822.60.]",
+            "PRELIMINARY PROVISIONS",
+            "TITLE 3. OF SUMMARY PROCEEDINGS [1132. - 1179a.]",
+            "CHAPTER 4. Summary Proceedings for Obtaining Possession of Real Property in Certain Cases [1159. - 1179a.]"
+          ]
+        ]
+      }
+    },
+    "insurance": {
+      "articles": ["Personal Injury", "Car Accidents"],
+      "laws": {
+        "NY": [
+          [
+            "ISC - Insurance",
+            "Article 24 - Unfair Methods of Competition and Unfair and Deceptive Acts and Practices"
+          ],
+          [
+            "ISC - Insurance",
+            "Article 26 - Unfair Claim Settlement Practices; Other Misconduct; Discrimination"
+          ],
+          ["ISC - Insurance", "Article 31 - Insurance Contracts - General"],
+          [
+            "ISC - Insurance",
+            "Article 32 - Insurance Contracts - Life, Accident and Health, Annuities"
+          ],
+          [
+            "ISC - Insurance",
+            "Article 34 - Insurance Contracts-property/casualty"
+          ],
+          [
+            "ISC - Insurance",
+            "Article 49 - Utilization Review and External Appeal"
+          ],
+          [
+            "ISC - Insurance",
+            "Article 51 - Comprehensive Motor Vehicle Insurance Reparations"
+          ]
+        ],
+        "CA": [["Insurance Code - INS"]]
+      }
+    },
+    "school": {
+      "articles": [],
+      "laws": {
+        "NY": [["EDN - Education", "Title 4 - Teachers and Pupils"]],
+        "CA": [
+          ["Education Code - EDC"],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3. OBLIGATIONS [1427. - 3273.91.]",
+            "PART 4. OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS [1738. - 3273.91.]",
+            "TITLE 1.6C.7. Educational Debt Collection Practices [1788.90. - 1788.94.]"
+          ],
+          [
+            "Civil Code - CIV",
+            "DIVISION 3. OBLIGATIONS [1427. - 3273.91.]",
+            "PART 4. OBLIGATIONS ARISING FROM PARTICULAR TRANSACTIONS [1738. - 3273.91.]",
+            "TITLE 1.6C.10. Student Loans: Borrower Rights [1788.100. - 1788.106.]"
+          ]
+        ]
+      }
+    },
+    "wills": {
+      "articles": ["Wills, Trusts & Probate"],
+      "laws": {
+        "NY": [["EPT - Estates, Powers & Trusts"]],
+        "CA": [["Probate Code - PROB"]]
+      }
+    }
+  }
+}
