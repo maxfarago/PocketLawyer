@@ -71,13 +71,21 @@ Recall is high on the large flairs (housing 0.973, family 0.949, employment 0.94
 
 Token fields were written on `POSTS.posts` (98,910), `ARTICLES.articles` (6,172, mid-crawl, so the next train rewrites them), and `LAWS.CA` (161,426). `LAWS.NY` was tokenized later, after the Senate load, 10,816 sections.
 
+## New York statute text, 2026-09-23
+
+The Senate API stores line breaks as the two characters `\` and `n`. All 10,816 sections had them. Punctuation stripping deleted the backslash and glued the `n` onto the next word (`this\narticle` became `thisnarticl`). `senate_text` turns that sequence into a real newline before storage. The collection was rewritten, retokenized, and the eleven New York law matrices were refit. California matrices were left as they were. Snippets collapse the newline, so the page shows "this article".
+
 ## Law rankers, 2026-09-22
 
 One TF-IDF matrix per flair per state, fit only on sections whose path starts with a mapped prefix. No route was empty. The notebook law vectorizer is `lowercase=False` with no `max_features` cap; the token pattern is pinned to `(?u)\b\w\w+\b`. Each artifact holds the vectorizer, the sparse matrix, and the display rows in that same order: `2016/artifacts/laws/{NY,CA}/{flair}.joblib`. Counts are in `2016/artifacts/laws_report.json`. New York employment is 41 sections (Articles 6 and 19). California employment is 954 (Labor Code division 2). California school is the largest, 11,520, because the route is the whole Education Code.
 
 ## Article rankers, 2026-09-22
 
-994 articles were missing tokens after the crawl finished. Those were tokenized, then one matrix was fit per flair on the mapped Nolo areas only. Digital and school were skipped because their article lists are empty. Contract is 744 articles in Business Formation and Small Claims, and the rows include "Contracts 101: Make a Legally Valid Contract". Display rows are title, url, and area. No article body is stored in the artifact. Files are `2016/artifacts/articles/{flair}.joblib`. Counts are in `2016/artifacts/articles_report.json`.
+994 articles were missing tokens after the crawl finished. Those were tokenized, then one matrix was fit per flair on the mapped Nolo areas only. Digital and school were skipped because their article lists are empty. Contract is 744 articles in Business Formation and Small Claims, and the rows include "Contracts 101: Make a Legally Valid Contract". Display rows keep title, url, area, and the article body so query time can quote sentences. Files are `2016/artifacts/articles/{flair}.joblib`. Counts are in `2016/artifacts/articles_report.json`.
+
+## Article LDA, 2026-09-23
+
+Each article pack also holds a count vectorizer and `LatentDirichletAllocation`, fit on that flair's article tokens, 10 topics, `random_state=2016`, batch, 30 iterations. sklearn, not gensim. After cosine picks the top five articles, their sentences are ranked by cosine of the LDA topic mix against the question. Other-state sentences drop. The page shows the top two as quoted prose. Statute text is not in that paragraph.
 
 ## Overtime question, 2026-09-22
 
@@ -85,7 +93,7 @@ Question: "i work more than 40 hours a week but my boss wont pay me for overtime
 
 Both states classify as `employment` with classifier score 0.945. That score is not a calibrated probability.
 
-New York laws, cosine: LAB § 661 records of employers (0.317), § 195 notice and record-keeping (0.204), § 196-E construction reporting pay (0.146), § 652 minimum wage (0.122), § 190 definitions (0.097). The route is only Articles 6 and 19, payment of wages and minimum wage, so the hours statutes are not in the matrix. Top article: "What's Your Unpaid Wage Claim Worth in New York?"
+New York laws, cosine, after the newline decode: LAB § 661 records of employers (0.372), § 195 notice and record-keeping (0.216), § 196-E construction reporting pay (0.177), § 660 commissioner's powers of investigation (0.170), § 190 definitions (0.138). The route is only Articles 6 and 19, payment of wages and minimum wage, so the hours statutes are not in the matrix. Top article: "What's Your Unpaid Wage Claim Worth in New York?"
 
 California laws: LAB § 556 (0.415), § 1815 (0.376), § 751.8 (0.362), § 513 (0.361), § 1454 (0.340). Top article: "California Wage and Hour Laws". The state filter kept California titles and dropped other states.
 

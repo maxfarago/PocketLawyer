@@ -1,5 +1,6 @@
 from pl2016.scrape.california import lob_to_text, parse_row, section_path
-from pl2016.scrape.newyork import iter_sections, node_label, routed_law_ids
+from pl2016.scrape.newyork import iter_sections, node_label, routed_law_ids, senate_text
+from pl2016.text import get_tokens
 
 
 def test_parse_row_unquotes_backticks_and_nulls():
@@ -47,6 +48,14 @@ def test_section_path_uses_official_toc_headings():
 def test_lob_text_drops_markup():
     xml = '<caml:Content><p>(a)<span class="EnSpace"/>Eight hours.</p><p>(b)<span class="EnSpace"/>Overtime.</p></caml:Content>'
     assert lob_to_text(xml) == "(a) Eight hours.\n(b) Overtime."
+
+
+def test_senate_text_decodes_literal_newlines():
+    decoded = senate_text("covered by this\\narticle, not\\nless")
+    assert decoded == "covered by this\narticle, not\nless"
+    assert "\\n" not in decoded
+    assert "thisnarticl" not in get_tokens(decoded)
+    assert "articl" in get_tokens(decoded)
 
 
 def test_new_york_section_path_includes_the_law_and_the_article():

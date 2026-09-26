@@ -21,7 +21,9 @@ from pl2016.train import ARTIFACTS, slug
 TOP_LAWS = 5
 TOP_ARTICLES = 5
 TOP_SCORES = 3
+TOP_ADVICE = 2
 SNIPPET_CHARS = 400
+MIN_SENTENCE_CHARS = 40
 
 # Notebook state list, without "National", which is not a jurisdiction and would
 # drop ordinary titles. Longest name first so "West Virginia" is not "Virginia"
@@ -119,24 +121,94 @@ def snippet(text: str) -> str:
     return cut
 
 
-def select_articles(ranked: list[tuple[float, dict]], user_state: str) -> list[dict]:
+def article_candidates(ranked: list[tuple[float, dict]], user_state: str) -> list[tuple[float, dict]]:
     """User's state first, then titles that name no state. Other states drop out."""
-    preferred: list[dict] = []
-    neutral: list[dict] = []
+    preferred: list[tuple[float, dict]] = []
+    neutral: list[tuple[float, dict]] = []
     for score, row in ranked:
         named = states_in_title(row.get("title") or "")
-        item = {
-            "title": row.get("title") or "",
-            "url": row.get("url") or "",
-            "score": round(float(score), 4),
-        }
         if not named:
-            neutral.append(item)
+            neutral.append((score, row))
         elif any(code != user_state for code in named):
             continue
         else:
-            preferred.append(item)
+            preferred.append((score, row))
     return (preferred + neutral)[:TOP_ARTICLES]
+
+
+def select_articles(ranked: list[tuple[float, dict]], user_state: str) -> list[dict]:
+    chosen = []
+    for score, row in article_candidates(ranked, user_state):
+        chosen.append(
+            {
+                "title": row.get("title") or "",
+                "url": row.get("url") or "",
+                "score": round(float(score), 4),
+            }
+        )
+    return chosen
+
+
+def split_sentences(text: str) -> list[str]:
+    from nltk.tokenize import sent_tokenize
+
+    sentences = []
+    for raw in sent_tokenize(text or ""):
+        sentence = " ".join(raw.split())
+        if len(sentence) < MIN_SENTENCE_CHARS:
+            continue
+        if not sentence[0].isalpha() or sentence[-1] not in ".!?":
+            continue
+        sentences.append(sentence)
+    return sentences
+
+
+def rank_advice(
+    rows: list[dict],
+    question_tokens: str,
+    lda_vectorizer,
+    lda,
+    user_state: str,
+) -> list[dict]:
+    """Top sentences from retrieved articles, ranked by LDA topic mix."""
+    if lda is None or lda_vectorizer is None or not rows:
+        return []
+    from sklearn.metrics.pairwise import cosine_similarity
+
+    candidates: list[tuple[str, str, dict]] = []
+    for row in rows:
+        if any(code != user_state for code in states_in_title(row.get("title") or "")):
+            continue
+        for sentence in split_sentences(row.get("text") or ""):
+            if any(code != user_state for code in states_in_title(sentence)):
+                continue
+            tokens = get_tokens(sentence)
+            if not tokens:
+                continue
+            candidates.append((sentence, tokens, row))
+    if not candidates:
+        return []
+    user = lda.transform(lda_vectorizer.transform([question_tokens]))
+    topics = lda.transform(lda_vectorizer.transform([item[1] for item in candidates]))
+    scores = cosine_similarity(topics, user).ravel()
+    chosen: list[dict] = []
+    seen: set[str] = set()
+    for index in scores.argsort()[::-1]:
+        sentence, _, row = candidates[int(index)]
+        if sentence in seen:
+            continue
+        seen.add(sentence)
+        chosen.append(
+            {
+                "text": sentence,
+                "title": row.get("title") or "",
+                "url": row.get("url") or "",
+                "score": round(float(scores[index]), 4),
+            }
+        )
+        if len(chosen) == TOP_ADVICE:
+            break
+    return chosen
 
 
 def _cosine_order(vectorizer, matrix, tokens: str) -> list[tuple[float, int]]:
@@ -216,10 +288,26 @@ def ask(question: str, state: str, models: Models | None = None) -> dict:
     articles_started = time.perf_counter()
     article_pack = loaded.articles.get(section)
     articles: list[dict] = []
+    advice: list[dict] = []
     if article_pack is not None:
         article_order = _cosine_order(article_pack["vectorizer"], article_pack["matrix"], tokens)
         ranked = [(score, article_pack["rows"][index]) for score, index in article_order]
-        articles = select_articles(ranked, code)
+        chosen = article_candidates(ranked, code)
+        articles = [
+            {
+                "title": row.get("title") or "",
+                "url": row.get("url") or "",
+                "score": round(float(score), 4),
+            }
+            for score, row in chosen
+        ]
+        advice = rank_advice(
+            [row for _, row in chosen],
+            tokens,
+            article_pack.get("lda_vectorizer"),
+            article_pack.get("lda"),
+            code,
+        )
     articles_ms = _ms(articles_started)
 
     return {
@@ -227,6 +315,7 @@ def ask(question: str, state: str, models: Models | None = None) -> dict:
         "state": code,
         "section": section,
         "section_probs": section_probs,
+        "advice": advice,
         "laws": laws,
         "articles": articles,
         "timings_ms": {
