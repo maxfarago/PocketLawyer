@@ -15,14 +15,25 @@ from pl2016.config import STATES
 from pl2016.train import ARTIFACTS
 
 
+STATIC = Path(__file__).resolve().parent / "static"
+
+
 def create_app(models: Models | None = None, artifacts: Path | None = None):
-    from flask import Flask, jsonify, request
+    from flask import Flask, jsonify, request, send_from_directory
 
     directory = artifacts or Path(os.environ.get("PL2016_ARTIFACTS", ARTIFACTS))
     loaded = models if models is not None else Models.load(directory)
     app = Flask(__name__)
     app.config["MODELS"] = loaded
     app.config["ARTIFACTS"] = directory
+
+    @app.get("/")
+    def index():
+        return send_from_directory(STATIC, "index.html")
+
+    @app.get("/favicon.ico")
+    def favicon():
+        return ("", 204)
 
     @app.get("/health")
     def health():

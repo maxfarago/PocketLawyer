@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pocket Lawyer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%231a1916'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1a1916;
+      --muted: #726d64;
+      --line: #ddd8ce;
+      --paper: #f6f4ef;
+      --soft: #ebe7df;
+    }
+    * { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body {
+      margin: 0 auto;
+      max-width: 40rem;
+      padding: 4.5rem 1.5rem 6rem;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+      font-size: 1.0625rem;
+      line-height: 1.5;
+    }
+    header { margin-bottom: 3rem; }
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+    .mark {
+      margin: 0.6rem 0 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    form { margin: 0; }
+    label.question {
+      display: block;
+      margin-bottom: 0.4rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 7.5rem;
+      margin: 0;
+      padding: 0 0 0.8rem;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-size: 1.45rem;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
+      resize: none;
+    }
+    textarea:focus { outline: none; border-bottom-color: var(--ink); }
+    textarea::placeholder { color: #b7b1a6; }
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 1.25rem;
+    }
+    fieldset {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      display: flex;
+      gap: 0.4rem;
+    }
+    legend {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+    .state {
+      position: relative;
+    }
+    .state input {
+      position: absolute;
+      opacity: 0;
+      inset: 0;
+      margin: 0;
+    }
+    .state span {
+      display: block;
+      padding: 0.45rem 0.7rem;
+      border-bottom: 1px solid transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .state input:checked + span {
+      color: var(--ink);
+      border-bottom-color: var(--ink);
+    }
+    .state input:focus-visible + span {
+      outline: 1px solid var(--ink);
+      outline-offset: 3px;
+    }
+    button {
+      border: 0;
+      background: var(--ink);
+      color: var(--paper);
+      font: inherit;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+      padding: 0.55rem 1.1rem;
+      cursor: pointer;
+    }
+    button:disabled { background: var(--soft); color: var(--muted); cursor: default; }
+    button:focus-visible { outline: 1px solid var(--ink); outline-offset: 3px; }
+    .notice {
+      margin: 2.5rem 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    #result { margin-top: 3rem; }
+    #result:empty { margin-top: 0; }
+    .error { margin: 0; color: var(--ink); }
+    .section-name {
+      margin: 0;
+      font-size: 1.7rem;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+    }
+    .alts {
+      margin: 0.35rem 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .score { font-variant-numeric: tabular-nums; }
+    h2 {
+      margin: 2.4rem 0 0.2rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    ol { list-style: none; margin: 0; padding: 0; }
+    li { padding: 1rem 0; border-bottom: 1px solid var(--line); }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: baseline;
+    }
+    a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+    a:hover { text-decoration: none; }
+    .title { margin: 0.15rem 0 0; }
+    .snippet {
+      margin: 0.45rem 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+    .empty { margin: 0.6rem 0 0; color: var(--muted); }
+    .advice { margin: 1.8rem 0 0; }
+    .advice li { padding: 1.1rem 0; }
+    .advice p {
+      margin: 0;
+      font-size: 1.2rem;
+      line-height: 1.45;
+      letter-spacing: -0.02em;
+    }
+    .advice .source {
+      display: block;
+      margin-top: 0.45rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    @media (max-width: 36rem) {
+      body { padding-top: 2.5rem; }
+      h1 { font-size: 1.7rem; }
+      textarea { font-size: 1.25rem; }
+      .controls { align-items: stretch; flex-direction: column; }
+      button { align-self: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Pocket Lawyer</h1>
+    <p class="mark">2016 · New York and California</p>
+  </header>
+  <form id="ask">
+    <label class="question" for="question">Question</label>
+    <textarea id="question" name="question" rows="4" autocomplete="off" required placeholder="What happened?"></textarea>
+    <div class="controls">
+      <fieldset>
+        <legend>State</legend>
+        <label class="state"><input type="radio" name="state" value="NY" required><span>New York</span></label>
+        <label class="state"><input type="radio" name="state" value="CA"><span>California</span></label>
+      </fieldset>
+      <button type="submit">Ask</button>
+    </div>
+  </form>
+  <p class="notice">Not legal advice. A retrieved statute or article is not an answer to the question.</p>
+  <div id="result" aria-live="polite"></div>
+  <script>
+    const form = document.querySelector("#ask");
+    const question = document.querySelector("#question");
+    const result = document.querySelector("#result");
+    const button = form.querySelector("button");
+
+    function safeUrl(value) {
+      try {
+        const url = new URL(value);
+        return url.protocol === "https:" || url.protocol === "http:" ? url.href : "";
+      } catch (error) {
+        return "";
+      }
+    }
+
+    function score(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number.toFixed(3) : "";
+    }
+
+    function link(text, href) {
+      const safe = safeUrl(href);
+      if (!safe) {
+        const span = document.createElement("span");
+        span.textContent = text || "";
+        return span;
+      }
+      const anchor = document.createElement("a");
+      anchor.href = safe;
+      anchor.target = "_blank";
+      anchor.rel = "noopener noreferrer";
+      anchor.textContent = text || safe;
+      return anchor;
+    }
+
+    function heading(name) {
+      const node = document.createElement("h2");
+      node.textContent = name;
+      return node;
+    }
+
+    function render(body) {
+      result.replaceChildren();
+      const title = document.createElement("p");
+      title.className = "section-name";
+      const label = body.section ? body.section.charAt(0).toUpperCase() + body.section.slice(1) : "";
+      title.textContent = label;
+      const primary = document.createElement("span");
+      primary.className = "score";
+      primary.textContent = "  " + score(body.section_probs && body.section_probs[0] && body.section_probs[0].score);
+      title.append(primary);
+      result.append(title);
+
+      const alts = (body.section_probs || []).slice(1);
+      if (alts.length) {
+        const line = document.createElement("p");
+        line.className = "alts";
+        line.textContent = alts.map((item) => item.section + " " + score(item.score)).join("  ·  ");
+        result.append(line);
+      }
+
+      if (body.advice && body.advice.length) {
+        const quotes = document.createElement("ol");
+        quotes.className = "advice";
+        body.advice.forEach((item) => {
+          const entry = document.createElement("li");
+          const sentence = document.createElement("p");
+          sentence.textContent = item.text || "";
+          const source = document.createElement("span");
+          source.className = "source";
+          source.append(link(item.title, item.url));
+          entry.append(sentence, source);
+          quotes.append(entry);
+        });
+        result.append(quotes);
+      }
+
+      result.append(heading("Statutes"));
+      const laws = document.createElement("ol");
+      (body.laws || []).forEach((law) => {
+        const item = document.createElement("li");
+        const row = document.createElement("div");
+        row.className = "row";
+        row.append(link(law.citation, law.url));
+        const value = document.createElement("span");
+        value.className = "score";
+        value.textContent = score(law.score);
+        row.append(value);
+        const name = document.createElement("p");
+        name.className = "title";
+        name.textContent = law.title || "";
+        const snippet = document.createElement("p");
+        snippet.className = "snippet";
+        snippet.textContent = law.snippet || "";
+        item.append(row, name, snippet);
+        laws.append(item);
+      });
+      result.append(laws);
+      if (!body.laws || !body.laws.length) {
+        const empty = document.createElement("p");
+        empty.className = "empty";
+        empty.textContent = "No statutes in this area.";
+        result.append(empty);
+      }
+
+      result.append(heading("Articles"));
+      const articles = document.createElement("ol");
+      (body.articles || []).forEach((article) => {
+        const item = document.createElement("li");
+        const row = document.createElement("div");
+        row.className = "row";
+        row.append(link(article.title, article.url));
+        const value = document.createElement("span");
+        value.className = "score";
+        value.textContent = score(article.score);
+        row.append(value);
+        item.append(row);
+        articles.append(item);
+      });
+      result.append(articles);
+      if (!body.articles || !body.articles.length) {
+        const empty = document.createElement("p");
+        empty.className = "empty";
+        empty.textContent = "No articles in this area.";
+        result.append(empty);
+      }
+    }
+
+    function showError(message) {
+      result.replaceChildren();
+      const line = document.createElement("p");
+      line.className = "error";
+      line.textContent = message;
+      result.append(line);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const state = new FormData(form).get("state");
+      const text = question.value.trim();
+      if (!text || !state) {
+        showError("A question and a state are both required.");
+        return;
+      }
+      button.disabled = true;
+      button.textContent = "Asking";
+      try {
+        const response = await fetch("/ask", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ question: text, state: state }),
+        });
+        const body = await response.json();
+        if (!response.ok) {
+          showError(body.error || "The request failed.");
+          return;
+        }
+        render(body);
+      } catch (error) {
+        showError("The request failed.");
+      } finally {
+        button.disabled = false;
+        button.textContent = "Ask";
+      }
+    });
+  </script>
+</body>
+</html>

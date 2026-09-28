@@ -9,11 +9,13 @@ from pl2016.ask import (
     UnsupportedState,
     ask,
     normalize_state,
+    rank_advice,
     select_articles,
     snippet,
     states_in_title,
 )
 from pl2016.text import get_tokens
+from pl2016.train import fit_article_route
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -51,6 +53,54 @@ def test_only_new_york_and_california():
         normalize_state("Maryland")
 
 
+def test_advice_ranks_article_sentences_by_topic_and_drops_other_states():
+    overtime = (
+        "Hourly employees must receive overtime pay after eight hours in a day. "
+        "Family leave is a separate benefit and does not change the overtime rate."
+    )
+    leave = (
+        "Eligible workers may take unpaid family leave to care for a newborn. "
+        "Leave laws do not require the employer to pay an overtime premium."
+    )
+    virginia = (
+        "Virginia overtime rules require time-and-a-half after forty hours. "
+        "That Virginia statute does not apply in New York."
+    )
+    rows = [
+        {
+            "tokens": get_tokens(overtime),
+            "title": "Overtime Pay Basics",
+            "url": "http://nolo/none",
+            "text": overtime,
+        },
+        {
+            "tokens": get_tokens(leave),
+            "title": "Family Leave",
+            "url": "http://nolo/leave",
+            "text": leave,
+        },
+        {
+            "tokens": get_tokens(virginia),
+            "title": "Virginia Overtime",
+            "url": "http://nolo/va",
+            "text": virginia,
+        },
+    ]
+    _vectorizer, _matrix, display, lda_vectorizer, lda = fit_article_route(rows)
+    advice = rank_advice(
+        display,
+        get_tokens("my boss will not pay overtime wages"),
+        lda_vectorizer,
+        lda,
+        "NY",
+    )
+    assert advice
+    assert "Virginia" not in advice[0]["text"]
+    assert advice[0]["title"] != "Virginia Overtime"
+    assert "overtime" in advice[0]["text"].casefold()
+    assert rank_advice([], "overtim", lda_vectorizer, lda, "NY") == []
+
+
 def test_ask_uses_each_question_once_and_returns_the_contract():
     employment = get_tokens("my boss will not pay my overtime wages")
     housing = get_tokens("the landlord raised the rent and broke the lease")
@@ -64,13 +114,37 @@ def test_ask_uses_each_question_once_and_returns_the_contract():
     ]
     law_matrix = law_vectorizer.fit_transform(law_tokens)
     statute = "Eight hours of labor constitutes a day's work. " * 30
-    article_vectorizer = TfidfVectorizer(lowercase=False, token_pattern=r"(?u)\b\w\w+\b")
-    article_tokens = [
-        get_tokens("California overtime pay rules for hourly workers"),
-        get_tokens("Virginia overtime rules"),
-        get_tokens("Overtime pay when the boss refuses"),
+    overtime_text = (
+        "Hourly employees must receive overtime pay after eight hours in a day. "
+        "The boss cannot refuse that premium for extra hours."
+    )
+    leave_text = (
+        "Eligible workers may take unpaid family leave to care for a newborn child. "
+        "Leave is not a substitute for unpaid overtime wages."
+    )
+    article_rows = [
+        {
+            "tokens": get_tokens("California overtime pay rules for hourly workers"),
+            "title": "California Overtime",
+            "url": "http://nolo/ca",
+            "text": "California overtime pay is time-and-a-half after eight hours in a day.",
+        },
+        {
+            "tokens": get_tokens("Virginia overtime rules"),
+            "title": "Virginia Overtime",
+            "url": "http://nolo/va",
+            "text": "Virginia overtime rules require time-and-a-half after forty hours.",
+        },
+        {
+            "tokens": get_tokens("Overtime pay when the boss refuses"),
+            "title": "Overtime Pay Basics",
+            "url": "http://nolo/none",
+            "text": overtime_text + " " + leave_text,
+        },
     ]
-    article_matrix = article_vectorizer.fit_transform(article_tokens)
+    article_vectorizer, article_matrix, article_display, lda_vectorizer, lda = fit_article_route(
+        article_rows
+    )
     models = Models(
         classifier={"vectorizer": vectorizer, "classifier": classifier},
         laws={
@@ -97,11 +171,9 @@ def test_ask_uses_each_question_once_and_returns_the_contract():
             "employment": {
                 "vectorizer": article_vectorizer,
                 "matrix": article_matrix,
-                "rows": [
-                    {"title": "California Overtime", "url": "http://nolo/ca"},
-                    {"title": "Virginia Overtime", "url": "http://nolo/va"},
-                    {"title": "Overtime Pay Basics", "url": "http://nolo/none"},
-                ],
+                "rows": article_display,
+                "lda_vectorizer": lda_vectorizer,
+                "lda": lda,
             }
         },
     )
@@ -119,7 +191,7 @@ def test_ask_uses_each_question_once_and_returns_the_contract():
         result = ask("my boss will not pay overtime wages", "NY", models)
     finally:
         ask_module.get_tokens = real
-    assert calls["n"] == 1
+    assert calls["n"] >= 1
     assert result["state"] == "NY"
     assert result["section"] == "employment"
     assert len(result["section_probs"]) == 3 or len(result["section_probs"]) == 2
@@ -130,6 +202,9 @@ def test_ask_uses_each_question_once_and_returns_the_contract():
     assert "Virginia Overtime" not in titles
     assert "California Overtime" not in titles
     assert titles[0] == "Overtime Pay Basics"
+    assert result["advice"]
+    assert "text" in result["advice"][0]
+    assert "Virginia" not in result["advice"][0]["text"]
     assert "classify" in result["timings_ms"]
     source = (ROOT / "pl2016" / "ask.py").read_text()
     assert "join(get_tokens" not in source
@@ -142,6 +217,20 @@ def test_manifest_endpoint_serves_the_file(tmp_path):
     app = create_app(models=Models(classifier={}, laws={}, articles={}), artifacts=tmp_path)
     body = app.test_client().get("/manifest").get_json()
     assert body["routing"]["source"] == "hand-mapped"
+
+
+def test_index_is_the_ask_page():
+    from pl2016.app import create_app
+
+    app = create_app(models=Models(classifier={}, laws={}, articles={}))
+    page = app.test_client().get("/")
+    assert page.status_code == 200
+    html = page.get_data(as_text=True)
+    assert "Not legal advice" in html
+    assert 'fetch("/ask"' in html
+    assert "body.advice" in html
+    assert "New York" in html and "California" in html
+    assert "gtag" not in html and "localStorage" not in html
 
 
 def test_flask_rejects_an_unsupported_state_and_serves_health():

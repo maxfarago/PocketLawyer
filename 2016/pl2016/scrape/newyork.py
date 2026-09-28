@@ -59,6 +59,11 @@ def node_label(node: dict, law_id: str, law_name: str) -> str:
     return title or f"{kind} {level}".strip()
 
 
+def senate_text(text: str) -> str:
+    """The API stores line breaks as the two characters backslash and n."""
+    return (text or "").replace("\\n", "\n").strip()
+
+
 def iter_sections(tree: dict):
     result = tree.get("result") or tree
     info = result.get("info") or {}
@@ -83,7 +88,7 @@ def iter_sections(tree: dict):
                 "law_id": law_id,
                 "location_id": node.get("locationId"),
                 "title": (node.get("title") or "").strip(),
-                "text": (node.get("text") or "").strip(),
+                "text": senate_text(node.get("text") or ""),
                 "section": yield_path,
             }
         documents = node.get("documents") or {}
@@ -110,6 +115,34 @@ def fetch_law(law_id: str, key: str) -> dict:
         raise RuntimeError(payload.get("message") or f"{law_id} request failed")
     cache.write_text(json.dumps(payload), encoding="utf-8")
     return payload
+
+
+def repair_stored_text(uri: str = MONGO_URI) -> dict:
+    """Rewrite LAWS.NY text that still contains a literal backslash-n."""
+    from pymongo import MongoClient, UpdateOne
+
+    client = MongoClient(uri, serverSelectionTimeoutMS=3000)
+    client.admin.command("ping")
+    collection = client["LAWS"]["NY"]
+    batch: list = []
+    rewritten = 0
+
+    def flush() -> None:
+        nonlocal rewritten
+        if not batch:
+            return
+        collection.bulk_write(batch, ordered=False)
+        rewritten += len(batch)
+        batch.clear()
+        print(f"new york text {rewritten}", flush=True)
+
+    for doc in collection.find({"text": {"$regex": r"\\n"}}, {"text": 1}, batch_size=500):
+        batch.append(UpdateOne({"_id": doc["_id"]}, {"$set": {"text": senate_text(doc["text"])}}))
+        if len(batch) >= 500:
+            flush()
+    flush()
+    print(f"new york text done {rewritten}", flush=True)
+    return {"rewritten": rewritten}
 
 
 def load(uri: str = MONGO_URI) -> dict:

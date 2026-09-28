@@ -52,6 +52,13 @@ LAW_VECTORIZER_PARAMS = {
     "norm": "l2",
     "token_pattern": r"(?u)\b\w\w+\b",
 }
+LDA_VECTORIZER_PARAMS = {
+    "lowercase": False,
+    "token_pattern": r"(?u)\b\w\w+\b",
+}
+LDA_TOPICS = 10
+LDA_RANDOM_STATE = 2016
+LDA_MAX_ITER = 30
 SLUG_CHARS = (" ", "/", "&", "\\", ",", ".", ":")
 SPLIT_TEST_SIZE = 0.2
 SPLIT_RANDOM_STATE = 2016
@@ -68,6 +75,12 @@ def make_law_vectorizer():
     from sklearn.feature_extraction.text import TfidfVectorizer
 
     return TfidfVectorizer(**LAW_VECTORIZER_PARAMS)
+
+
+def make_lda_vectorizer():
+    from sklearn.feature_extraction.text import CountVectorizer
+
+    return CountVectorizer(**LDA_VECTORIZER_PARAMS)
 
 
 def slug(name: str) -> str:
@@ -306,23 +319,45 @@ def _load_routed_laws(collection, prefixes: list[list[str]]) -> list[dict]:
     return matching_laws(found, prefixes)
 
 
-def train_laws(uri: str = MONGO_URI) -> dict:
+def train_laws(
+    uri: str = MONGO_URI,
+    states: tuple[str, ...] | None = None,
+    retokenize: bool = False,
+) -> dict:
     import joblib
     from pymongo import MongoClient
 
+    selected = tuple(states) if states is not None else STATES
     written = write_tokens(
         uri,
-        collections=((LAWS_DB, STATES[0]), (LAWS_DB, STATES[1])),
-        missing_only=True,
+        collections=tuple((LAWS_DB, state) for state in selected),
+        missing_only=not retokenize,
     )
     routes = json.loads((ROOT / "routing_tables" / "flair_routes.json").read_text(encoding="utf-8"))
     client = MongoClient(uri, serverSelectionTimeoutMS=3000)
     trained_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-    report: dict = {"trained_at": trained_at, "tokens_written": written, "routes": {}, "skipped": []}
+    previous = _read_json(ARTIFACTS / "laws_report.json")
+    tokens_written = dict(previous.get("tokens_written") or {})
+    tokens_written.update(written)
+    report: dict = {
+        "trained_at": trained_at,
+        "tokens_written": tokens_written,
+        "routes": {},
+        "skipped": [
+            item
+            for item in previous.get("skipped") or []
+            if item.get("state") not in selected
+        ],
+    }
     for label in LABELS:
         mapping = routes["mappings"][label]
         report["routes"][label] = {}
         for state in STATES:
+            if state not in selected:
+                prior = (previous.get("routes") or {}).get(label, {}).get(state)
+                if prior:
+                    report["routes"][label][state] = prior
+                continue
             prefixes = mapping["laws"][state]
             rows = _load_routed_laws(client[LAWS_DB][state], prefixes)
             fitted = fit_law_route_or_skip(rows)
@@ -365,22 +400,43 @@ def matching_articles(docs, areas: list[str]) -> list:
     return chosen
 
 
+def fit_article_lda(tokens: list[str]):
+    """Count-based LDA on the same article tokens. Unused if the route is too small."""
+    from sklearn.decomposition import LatentDirichletAllocation
+
+    vectorizer = make_lda_vectorizer()
+    counts = vectorizer.fit_transform(tokens)
+    if counts.shape[0] < 2 or counts.shape[1] < 2:
+        return vectorizer, None
+    topics = min(LDA_TOPICS, counts.shape[0])
+    lda = LatentDirichletAllocation(
+        n_components=topics,
+        random_state=LDA_RANDOM_STATE,
+        learning_method="batch",
+        max_iter=LDA_MAX_ITER,
+    )
+    lda.fit(counts)
+    return vectorizer, lda
+
+
 def fit_article_route(rows: list[dict]):
-    """Vectorizer, matrix, and display rows. The public fields are title and url."""
+    """TF-IDF ranker plus LDA. Display rows keep the body for sentence quotes."""
     tokens = [row.get("tokens") or "" for row in rows]
     vectorizer = make_law_vectorizer()
     matrix = vectorizer.fit_transform(tokens)
+    lda_vectorizer, lda = fit_article_lda(tokens)
     display = [
         {
             "title": row.get("title") or "",
             "url": row.get("url") or "",
             "area": row.get("area") or "",
+            "text": row.get("text") or "",
         }
         for row in rows
     ]
     if matrix.shape[0] != len(display):
         raise RuntimeError("article matrix rows do not match the display rows")
-    return vectorizer, matrix, display
+    return vectorizer, matrix, display, lda_vectorizer, lda
 
 
 def train_articles(uri: str = MONGO_URI) -> dict:
@@ -407,7 +463,7 @@ def train_articles(uri: str = MONGO_URI) -> dict:
             continue
         found = collection.find(
             {"area": {"$in": areas}},
-            {"title": 1, "url": 1, "area": 1, "tokens": 1},
+            {"title": 1, "url": 1, "area": 1, "tokens": 1, "text": 1},
         ).sort("url", 1)
         rows = matching_articles(found, areas)
         if not rows:
@@ -415,18 +471,28 @@ def train_articles(uri: str = MONGO_URI) -> dict:
             report["skipped"].append({"flair": label, "reason": "no articles"})
             continue
         try:
-            vectorizer, matrix, display = fit_article_route(rows)
-        except ValueError as exc:
-            print(f"articles skip {label}: {exc}", flush=True)
-            report["skipped"].append({"flair": label, "reason": str(exc)})
+            vectorizer, matrix, display, lda_vectorizer, lda = fit_article_route(rows)
+        except ValueError as extra:
+            print(f"articles skip {label}: {extra}", flush=True)
+            report["skipped"].append({"flair": label, "reason": str(extra)})
             continue
         path = ARTIFACTS / "articles" / f"{slug(label)}.joblib"
         path.parent.mkdir(parents=True, exist_ok=True)
-        joblib.dump({"vectorizer": vectorizer, "matrix": matrix, "rows": display}, path)
+        joblib.dump(
+            {
+                "vectorizer": vectorizer,
+                "matrix": matrix,
+                "rows": display,
+                "lda_vectorizer": lda_vectorizer,
+                "lda": lda,
+            },
+            path,
+        )
         report["routes"][label] = {
             "areas": areas,
             "documents": len(display),
             "matrix_shape": [int(matrix.shape[0]), int(matrix.shape[1])],
+            "lda_topics": None if lda is None else int(lda.n_components),
             "file": str(path.relative_to(ROOT)),
         }
         print(f"articles {label} {len(display)}", flush=True)

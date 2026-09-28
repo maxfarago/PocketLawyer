@@ -157,10 +157,13 @@ def test_article_matrix_rows_match_the_display_rows():
         {"tokens": "breach contract", "title": "Contracts 101", "url": "https://nolo.test/a", "area": "Business Formation: LLCs & Corporations"},
         {"tokens": "small claim suit", "title": "Small Claims", "url": "https://nolo.test/b", "area": "Small Claims Court & Lawsuits"},
     ]
-    _vectorizer, matrix, display = fit_article_route(rows)
+    _vectorizer, matrix, display, lda_vectorizer, lda = fit_article_route(rows)
     assert matrix.shape[0] == len(display) == 2
     assert display[0]["title"] == "Contracts 101"
-    assert "text" not in display[0]
+    assert display[0]["text"] == ""
+    assert lda_vectorizer is not None
+    assert lda is not None
+    assert lda.n_components == 2
 
 
 def test_law_matrix_rows_match_the_display_rows():

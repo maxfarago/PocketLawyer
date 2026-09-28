@@ -23,4 +23,4 @@ Serving does not use Mongo. After the artifacts exist:
 python -m pl2016.app
 ```
 
-`POST /ask` takes `{"question": "...", "state": "NY"}`. `GET /health` and `GET /manifest` are open. The image is `docker build -t pl2016 .` from this directory, which copies `artifacts/`.
+Open `http://127.0.0.1:8080/` for the page. `POST /ask` takes `{"question": "...", "state": "NY"}`. `GET /health` and `GET /manifest` are open. The image is `docker build -t pl2016 .` from this directory, which copies `artifacts/`.
